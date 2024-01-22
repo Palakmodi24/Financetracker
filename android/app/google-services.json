@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "457695479833",
+    "project_id": "financetracker-2d4b5",
+    "storage_bucket": "financetracker-2d4b5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457695479833:android:fc53e0c9e17125779ec288",
+        "android_client_info": {
+          "package_name": "com.botkraftproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2GkA3XWJXWTClpg3hlYkcTWSiFFUCi7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
