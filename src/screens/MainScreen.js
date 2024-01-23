@@ -14,9 +14,6 @@ const MainScreen = () => {
   const [dataDownloadUrl,setdataDownloadUrl]=useState("");
   const navigation = useNavigation();
   
-  
-
-
   const pickdoc = async()=>{
     try{
       const response = await DocumentPicker.pickSingle({
@@ -27,7 +24,7 @@ const MainScreen = () => {
       console.log(response);
       setCsvData(response);
       if (response) {
-        const storageRef = storage().ref(`/input/${response.name}`);
+        const storageRef = storage().ref(`/input/${user.email}/${response.name}`);
         const put = await storageRef.putFile(response.fileCopyUri);
   
         setfullDataRefPath(put.metadata.fullPath);
@@ -43,6 +40,16 @@ const MainScreen = () => {
     }
   };
   const [isAccountOptionsVisible, setAccountOptionsVisible] = useState(false);
+
+  //checking user logged in
+  const user = auth().currentUser;
+  if (user) {
+    console.log('User is signed in:', user);
+    console.log(user);
+  } else {
+    console.log('No user is signed in');
+  }
+  //
 
   const toggleAccountOptions = () => {
     setAccountOptionsVisible(!isAccountOptionsVisible);
@@ -158,7 +165,9 @@ const MainScreen = () => {
     </View>
   </Modal>
       )}
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 30 }}> WELCOME</Text>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 5 }}> WELCOME</Text>
+      <Text style={{ fontSize: 20, fontWeight: 'normal', color: '#000000', marginBottom: 30 }}> {user.displayName}</Text>
+      
       <Image source={Companylogo} style={{ width: 900, height: 115, resizeMode: 'contain' }}/>
 
       <View style={{ marginTop: 30, width: '100%' }}>
@@ -184,7 +193,6 @@ const MainScreen = () => {
             justifyContent: 'center',
             alignItems: 'center',
             opacity: csvData ? 1.0 : 0.5,
-
           }}
           disabled={!csvData}
           onPress={() => navigation.navigate('ExpenseCategorization')}

@@ -47,8 +47,14 @@ const SignupScreen = () => {
     // Create user in Firebase Authentication
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
+        
+        await user.updateProfile({
+          displayName : name,
+         
+        })
+
         // Send verification email
         return user.sendEmailVerification();
       })
