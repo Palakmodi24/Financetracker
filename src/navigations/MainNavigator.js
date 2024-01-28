@@ -9,8 +9,10 @@ import LoginScreen from '../screens/LoginScreen';
 import SplashScreen from '../screens/SplashScreen';
 import MainScreen from '../screens/MainScreen';
 import LoginEx from '../screens/LoginEx';
-import ExpenseCategorization from '../screens/ExpenseCategorization';
 import ViewFiles from '../screens/ViewFiles';
+import MainClass from '../screens/Expense Categorization/MainClass';
+import PaymentSubClass from '../screens/Expense Categorization/PaymentSubClass';
+import RemainderSubClass from '../screens/Expense Categorization/RemainderSubClass';
 const Stack = createNativeStackNavigator();
 
 function MainNavigator() {
@@ -22,9 +24,12 @@ function MainNavigator() {
         <Stack.Screen name="Signup" component={SignupScreen} options={{headerShown:false}} />
         <Stack.Screen name="Splash" component={SplashScreen} options={{headerShown:false}} />
         <Stack.Screen name='Main' component={MainScreen} options={{headerShown:false}}/>
-        <Stack.Screen name='ExpenseCategorization' component={ExpenseCategorization} options={{headerShown:false}}/>
+        
         <Stack.Screen name='Loginex' component={LoginEx}/>
         <Stack.Screen name='ViewFiles' component={ViewFiles} options={{headerShown:false}}/>
+        <Stack.Screen name='MainClass' component={MainClass} options={{headerShown:false}}/>
+        <Stack.Screen name='PaymentSC' component={PaymentSubClass} options={{headerShown:false}}/>
+        <Stack.Screen name='RemainderSC' component={RemainderSubClass} options={{headerShown:false}}/>
 
         
 

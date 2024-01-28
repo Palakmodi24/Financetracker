@@ -1,119 +1,161 @@
-import { View, Text,Button,Image, TouchableOpacity,Alert } from 'react-native'
-import React,{useState} from 'react'
-import Companylogo from '../images/Companylogo.png'
-import DocumentPicker from 'react-native-document-picker'
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
 import storage from '@react-native-firebase/storage';
+import auth from '@react-native-firebase/auth';
+import CheckBox from '@react-native-community/checkbox';
 
-const MainScreen = () => {
+const extra = () => {
+  const [fileList, setFileList] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
-  const[csvData,setCsvData]=useState(null);
-  const[fullDataRefPath,setfullDataRefPath]=useState("");
-  const [dataDownloadUrl,setdataDownloadUrl]=useState("");
-
-
-  const pickdoc = async()=>{
-    try{
-      const response = await DocumentPicker.pickSingle({
-        type: [DocumentPicker.types.csv],
-        copyTo:"cachesDirectory"
-      
-      });
-      console.log(response);
-      setCsvData(response);
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const uploadData = async () => {
+  const fetchFileList = async () => {
     try {
-      const response =storage().ref(`/input/${csvData.name}`);
-      const put=await response.putFile(csvData.fileCopyUri);
-      //console.log(response);
-      setfullDataRefPath(put.metadata.fullPath);
-      const url=await response.getDownloadURL();
+      const user = auth().currentUser;
+      const storageRef = storage().ref(`input/${user.email}/`);
+      const listResult = await storageRef.listAll();
 
-      setdataDownloadUrl(url);
-      Alert.alert("Data uploaded successfully");
+      const files = listResult.items.map((item) => ({
+        name: item.name,
+        fullPath: item.fullPath,
+        downloadUrl: item.getDownloadURL(),
+      }));
 
-  
-    } catch (err) {
-      console.log(err);
-      
+      setFileList(files);
+    } catch (error) {
+      console.error('Error fetching file list:', error);
     }
   };
 
- 
+  useEffect(() => {
+    fetchFileList();
+  }, []);
+
+  const renderFileItem = ({ item }) => (
+    <TouchableOpacity onPress={() => handleFilePress(item)}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+        <CheckBox
+          value={selectedFiles.includes(item.fullPath)}
+          onValueChange={() => handleCheckboxChange(item.fullPath)}
+        />
+        <Text style={{ color: '#000000', marginLeft: 10 }}>{item.name}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const handleCheckboxChange = (fullPath) => {
+    setSelectedFiles((prevSelectedFiles) => {
+      if (prevSelectedFiles.includes(fullPath)) {
+        return prevSelectedFiles.filter((path) => path !== fullPath);
+      } else {
+        return [...prevSelectedFiles, fullPath];
+      }
+    });
+  };
+
+  const handleFilePress = (file) => {
+    console.log('File pressed:', file);
+    // Pass the file name to the handleDeleteFiles function
+    handleDeleteFiles(file.name);
+    
+  };
 
   
+
+  
+
+  const handleDeleteFiles = async () => {
+    try {
+      const user = auth().currentUser;
+      const storageRef = storage().ref(`/input/${user.email}/`);
+      const fullPath = 'color_x11.csv';
+  
+      try {
+        console.log("Checking file existence for path:", fullPath);
+        const downloadUrl = await storageRef.child(fullPath).getDownloadURL();
+        console.log("Deleting file at path:", fullPath);
+        await storageRef.child(fullPath).delete();
+      } catch (error) {
+        console.error(`Error deleting file at path ${fullPath}:`, error.message);
+      }
+  
+      fetchFileList();
+  
+      setSelectedFiles([]);
+  
+      // Alert.alert('File deleted successfully');
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      Alert.alert('Error', 'Failed to delete file. Please try again.');
+    }
+  };
+
   return (
-    
     <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 20, backgroundColor: '#EFB7B7', paddingTop: 200 }}>
-    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 30 }}> WELCOME</Text>
-    <Image source={Companylogo} />
-    
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 50 }}>
-      <TouchableOpacity
-        style={{
-          flex: 1,
-          height: 70,
-          borderRadius: 20,
-          backgroundColor: '#FA5007',
-          marginRight: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }} onPress={() => pickdoc()}>Select Data</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={{
-          flex: 1,
-          height: 70,
-          borderRadius: 20,
-          backgroundColor: '#FA5007',
-          marginLeft: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }} onPress={()=>uploadData()}>Upload your message</Text>
-      </TouchableOpacity>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 5 }}>Uploaded Files</Text>
+      {fileList.length > 0 ? (
+        <>
+          <FlatList
+            data={fileList}
+            keyExtractor={(item) => item.fullPath}
+            renderItem={renderFileItem}
+          />
+          <Button title="Delete" onPress={handleDeleteFiles} />
+        </>
+      ) : (
+        <Text>No files uploaded yet.</Text>
+      )}
     </View>
+  );
+};
 
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 20 }}>
-      <TouchableOpacity
-        style={{
-          flex: 1,
-          height: 70,
-          borderRadius: 20,
-          backgroundColor: '#FA5007',
-          marginRight: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>View Data</Text>
-      </TouchableOpacity>
+export default extra;
 
-      <TouchableOpacity
-        style={{
-          flex: 1,
-          height: 70,
-          borderRadius: 20,
-          backgroundColor: '#FA5007',
-          marginLeft: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>View Analytics</Text>
-      </TouchableOpacity>
-    </View>
 
-    <Text style={{marginTop:30,color: '#000000',fontSize:18}}>Select and upload your financial related data </Text>
-    <Text style={{color: '#000000',fontSize:18}}>and view the analytics </Text>
+/*const handleDeleteFiles = async () => {
+    try {
+      const user = auth().currentUser;
+      const storageRef = storage().ref(`input/${user.email}/`);
 
-    
-  </View>
-  )
-}
+      await Promise.all(
+        selectedFiles.map(async (fullPath) => {
+          const fileRef = storageRef.child(fullPath);
+          await fileRef.delete();
+        })
+      );
 
-export default MainScreen
+      // After deletion, fetch the updated file list
+      fetchFileList();
+      
+      // Clear the selected files
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error('Error deleting files:', error);
+    }
+  };*/
+
+  
+  /*const handleDeleteFiles = async () => {
+    try {
+      const user = auth().currentUser;
+      const storageRef = storage().ref(`/input/${user.email}/`);
+      const fullPath = 'color_x11.csv';
+  
+      try {
+        console.log("Checking file existence for path:", fullPath);
+        const downloadUrl = await storageRef.child(fullPath).getDownloadURL();
+        console.log("Deleting file at path:", fullPath);
+        await storageRef.child(fullPath).delete();
+      } catch (error) {
+        console.error(`Error deleting file at path ${fullPath}:`, error.message);
+      }
+  
+      fetchFileList();
+  
+      setSelectedFiles([]);
+  
+      // Alert.alert('File deleted successfully');
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      Alert.alert('Error', 'Failed to delete file. Please try again.');
+    }
+  };*/

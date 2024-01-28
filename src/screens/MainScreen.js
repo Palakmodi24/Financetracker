@@ -39,10 +39,22 @@ const MainScreen = () => {
       console.log(err);
     }
   };
+  const logout=async()=>{
+    try {
+      await auth().signOut();
+      navigation.navigate('Login');
+      
+    } catch (error) {
+      console.error('Logout Error:', error);
+      Alert.alert('Error logging out. Please try again.');
+      
+    }
+  }
   const [isAccountOptionsVisible, setAccountOptionsVisible] = useState(false);
 
   //checking user logged in
   const user = auth().currentUser;
+  
   if (user) {
     console.log('User is signed in:', user);
     console.log(user);
@@ -83,7 +95,8 @@ const MainScreen = () => {
       
     }  else if (option === 'Log Out') {
       // Handle logout
-      navigation.navigate('Login');
+      logout();
+      
     }
     // Close the account options menu
     setAccountOptionsVisible(false);
@@ -195,7 +208,7 @@ const MainScreen = () => {
             opacity: csvData ? 1.0 : 0.5,
           }}
           disabled={!csvData}
-          onPress={() => navigation.navigate('ExpenseCategorization')}
+          onPress={() => navigation.navigate('MainClass')}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Expense Categorization</Text>
         </TouchableOpacity>
@@ -216,8 +229,8 @@ const MainScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <Text style={{ marginTop: 30, color: '#000000', fontSize: 18 }}>Select and upload your financial-related data </Text>
-      <Text style={{ color: '#000000', fontSize: 18 }}>and view the analytics </Text>
+      <Text style={{ marginTop: 30, color: '#000000', fontSize: 18 }}>Select and upload your financial-related data and view the analytics</Text>
+      
     </View>
   );
 }
