@@ -205,9 +205,9 @@ const MainScreen = () => {
             marginBottom: 20,
             justifyContent: 'center',
             alignItems: 'center',
-            opacity: csvData ? 1.0 : 0.5,
+            //opacity: csvData ? 1.0 : 0.5,
           }}
-          disabled={!csvData}
+          //disabled={!csvData}
           onPress={() => navigation.navigate('MainClass')}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Expense Categorization</Text>
@@ -221,9 +221,9 @@ const MainScreen = () => {
             marginBottom: 10,
             justifyContent: 'center',
             alignItems: 'center',
-            opacity: csvData ? 1.0 : 0.5,
+            //opacity: csvData ? 1.0 : 0.5,
           }}
-          disabled={!csvData}
+          //disabled={!csvData}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>View Reports</Text>
         </TouchableOpacity>
