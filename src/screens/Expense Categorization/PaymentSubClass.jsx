@@ -1,9 +1,20 @@
-import { View, Text,TouchableOpacity } from 'react-native'
+import { View, Text,TouchableOpacity,Image } from 'react-native'
 import React from 'react'
+import back from '../../images/back_button.png'
+import { useNavigation } from '@react-navigation/native';
 
 const PaymentSubClass = () => {
+  const navigation = useNavigation();
   return (
-    <View style={{paddingTop:200, flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20, flexDirection: 'row', backgroundColor: '#EFB7B7', flexWrap: 'wrap' }}>
+    <View style={{flex: 1,backgroundColor: '#EFB7B7',paddingTop:20,paddingLeft:10}}>
+    <TouchableOpacity onPress={() => navigation.navigate('MainClass')}>
+    <Image source={back} style={{ width: 30, height: 30, resizeMode: 'contain',paddingTop:20 }} onPress={() => navigation.navigate('MainClass')} />
+    </TouchableOpacity>
+    <Text style={{paddingLeft:80, fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 10,justifyContent: 'center', alignItems: 'center' }}>
+        Payment Subsection
+      </Text>
+    <View style={{paddingTop:100, flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20, flexDirection: 'row', backgroundColor: '#EFB7B7', flexWrap: 'wrap' }}>
+    
       <TouchableOpacity
         style={{
           height: 120,
@@ -109,6 +120,7 @@ const PaymentSubClass = () => {
       </TouchableOpacity>
       
     </View>
+  </View>
   )
 }
 

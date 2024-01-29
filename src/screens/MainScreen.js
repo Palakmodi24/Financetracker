@@ -136,15 +136,7 @@ const MainScreen = () => {
         <Text style={{ fontSize: 18, margin: 10, color: '#fff' }}>Change Password</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#FA5007', // Set background color for the entire row
-          width: '50%', // Set width to 100%
-        }}
-        onPress={() => handleAccountOptionPress('Delete Files')}
-      >
-        <Text style={{ fontSize: 18, margin: 10, color: '#fff' }}>Delete Files</Text>
-      </TouchableOpacity>
+      
 
       <TouchableOpacity
         style={{
