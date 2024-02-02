@@ -9,7 +9,7 @@ const MainClass = () => {
   return (
     
     <View style={{flex: 1,backgroundColor: '#EFB7B7',paddingTop:20,paddingLeft:10}}>
-    <TouchableOpacity onPress={() => navigation.navigate('MainClass')}>
+    <TouchableOpacity onPress={() => navigation.navigate('Main')}>
     <Image source={back} style={{ width: 30, height: 30, resizeMode: 'contain',paddingTop:20 }} onPress={() => navigation.navigate('MainClass')} />
     </TouchableOpacity>
     <Text style={{paddingLeft:80, fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 10,justifyContent: 'center', alignItems: 'center' }}>
