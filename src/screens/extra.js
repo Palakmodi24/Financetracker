@@ -1,161 +1,125 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
-import storage from '@react-native-firebase/storage';
-import auth from '@react-native-firebase/auth';
-import CheckBox from '@react-native-community/checkbox';
+import React, { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity,Image } from 'react-native';
+import { VictoryPie, VictoryLabel } from "victory-native";
+import back from '../images/back_button.png'
+import { useNavigation } from '@react-navigation/native';
 
-const extra = () => {
-  const [fileList, setFileList] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+export default function Extra() {
+  const navigation = useNavigation();
+  const series = [430, 321, 185, 123, 80];
+  const sliceColor = ['#ff0000', '#808000', '#800000', '#00008b', '#9acd32'];
 
-  const fetchFileList = async () => {
-    try {
-      const user = auth().currentUser;
-      const storageRef = storage().ref(`input/${user.email}/`);
-      const listResult = await storageRef.listAll();
+  const titles = ['Payment', 'Withdrawal', 'Loan', 'Remainder', 'Others'];
 
-      const files = listResult.items.map((item) => ({
-        name: item.name,
-        fullPath: item.fullPath,
-        downloadUrl: item.getDownloadURL(),
-      }));
+  const [selectedData, setSelectedData] = useState(null);
 
-      setFileList(files);
-    } catch (error) {
-      console.error('Error fetching file list:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchFileList();
-  }, []);
-
-  const renderFileItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleFilePress(item)}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-        <CheckBox
-          value={selectedFiles.includes(item.fullPath)}
-          onValueChange={() => handleCheckboxChange(item.fullPath)}
-        />
-        <Text style={{ color: '#000000', marginLeft: 10 }}>{item.name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const handleCheckboxChange = (fullPath) => {
-    setSelectedFiles((prevSelectedFiles) => {
-      if (prevSelectedFiles.includes(fullPath)) {
-        return prevSelectedFiles.filter((path) => path !== fullPath);
-      } else {
-        return [...prevSelectedFiles, fullPath];
-      }
+  const handleItemClick = (index) => {
+    setSelectedData({
+      title: titles[index],
+      value: series[index],
+      color: sliceColor[index],
     });
   };
+  const total = series.reduce((acc, value) => acc + value, 0);
 
-  const handleFilePress = (file) => {
-    console.log('File pressed:', file);
-    // Pass the file name to the handleDeleteFiles function
-    handleDeleteFiles(file.name);
-    
-  };
-
-  
-
-  
-
-  const handleDeleteFiles = async () => {
-    try {
-      const user = auth().currentUser;
-      const storageRef = storage().ref(`/input/${user.email}/`);
-      const fullPath = 'color_x11.csv';
-  
-      try {
-        console.log("Checking file existence for path:", fullPath);
-        const downloadUrl = await storageRef.child(fullPath).getDownloadURL();
-        console.log("Deleting file at path:", fullPath);
-        await storageRef.child(fullPath).delete();
-      } catch (error) {
-        console.error(`Error deleting file at path ${fullPath}:`, error.message);
-      }
-  
-      fetchFileList();
-  
-      setSelectedFiles([]);
-  
-      // Alert.alert('File deleted successfully');
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      Alert.alert('Error', 'Failed to delete file. Please try again.');
-    }
-  };
+  const calculatePercentage = (value) => ((value / total) * 100).toFixed(2);
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 20, backgroundColor: '#EFB7B7', paddingTop: 200 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 5 }}>Uploaded Files</Text>
-      {fileList.length > 0 ? (
-        <>
-          <FlatList
-            data={fileList}
-            keyExtractor={(item) => item.fullPath}
-            renderItem={renderFileItem}
-          />
-          <Button title="Delete" onPress={handleDeleteFiles} />
-        </>
-      ) : (
-        <Text>No files uploaded yet.</Text>
-      )}
+    
+    <View style={{flex: 1,backgroundColor: '#EFB7B7'}}>
+      
+      <View style={{paddingTop:60,paddingLeft:10}}>
+        <TouchableOpacity onPress={() => navigation.navigate('Main')}>
+          <Image source={back} onPress={() => navigation.navigate('MainClass')} />
+        </TouchableOpacity>
+      </View> 
+        <View style={styles.container}>
+        <StatusBar style="auto" />
+        <Text style={{fontSize: 24, fontWeight: 'bold', color: '#000000',justifyContent: 'center', alignItems: 'center',paddingBottom: 10 }}>
+        Expense categorization
+      </Text>
+
+        <VictoryPie
+        data={series.map((value, index) => ({ y: value, label: `${calculatePercentage(value)}%` }))}
+        colorScale={sliceColor}
+        innerRadius={75}
+        labelRadius={100}
+        labels={() => null} 
+        style={{
+        labels: { fill: "white", fontSize: 12, fontWeight: "bold" },
+          }}
+        events={[
+        {
+          target: "data",
+          eventHandlers: {
+          onPress: () => {
+            return [
+            {
+              target: "labels",
+              mutation: ({ index }) => {
+                handleItemClick(index);
+              },
+            },
+          ];
+        },
+      },
+    },
+  ]}
+/>
+
+
+        <View style={styles.listContainer}>
+          {titles.map((title, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.listItem,
+                { backgroundColor: selectedData && selectedData.title === title ? selectedData.color : 'transparent' },
+              ]}
+              onPress={() => handleItemClick(index)}
+            >
+              <Text>{title}</Text>
+              <Text>{series[index]}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        
+      </View>
     </View>
   );
-};
+}
 
-export default extra;
-
-
-/*const handleDeleteFiles = async () => {
-    try {
-      const user = auth().currentUser;
-      const storageRef = storage().ref(`input/${user.email}/`);
-
-      await Promise.all(
-        selectedFiles.map(async (fullPath) => {
-          const fileRef = storageRef.child(fullPath);
-          await fileRef.delete();
-        })
-      );
-
-      // After deletion, fetch the updated file list
-      fetchFileList();
-      
-      // Clear the selected files
-      setSelectedFiles([]);
-    } catch (error) {
-      console.error('Error deleting files:', error);
-    }
-  };*/
-
-  
-  /*const handleDeleteFiles = async () => {
-    try {
-      const user = auth().currentUser;
-      const storageRef = storage().ref(`/input/${user.email}/`);
-      const fullPath = 'color_x11.csv';
-  
-      try {
-        console.log("Checking file existence for path:", fullPath);
-        const downloadUrl = await storageRef.child(fullPath).getDownloadURL();
-        console.log("Deleting file at path:", fullPath);
-        await storageRef.child(fullPath).delete();
-      } catch (error) {
-        console.error(`Error deleting file at path ${fullPath}:`, error.message);
-      }
-  
-      fetchFileList();
-  
-      setSelectedFiles([]);
-  
-      // Alert.alert('File deleted successfully');
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      Alert.alert('Error', 'Failed to delete file. Please try again.');
-    }
-  };*/
+const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    
+  },
+  container: {
+    flex: 1,
+   // backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 10,
+  },
+  listContainer: {
+    marginTop: 20,
+    width: '100%',
+    
+    
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    
+  },
+  selectedItem: {
+    backgroundColor: '#e0e0e0',
+    marginTop: 40,
+    padding: 10,
+  },
+});

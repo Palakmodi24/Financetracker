@@ -32,20 +32,21 @@ const LoginScreen = () => {
         const user = userCredential.user;
         // Check if the email is verified
         if (user.emailVerified) {
-          //Alert.alert('User logged in');
           // Navigate to the desired screen
           navigation.navigate('Splash');
-          //navigation.navigate('Loginex');
         } else {
           Alert.alert('Please verify your email before logging in.');
-          // Optionally, you can sign out the user
-          // auth().signOut();
         }
       })
       .catch((error) => {
-        console.log(error);
+        if (error.code === 'auth/invalid-credential') {
+          Alert.alert('Incorrect credentials. Please try again.');
+        } else {
+          console.log(error);
+        }
       });
   };
+  
 
   const forgotPassword = () => {
     if (!email) {

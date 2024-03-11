@@ -13,6 +13,8 @@ import ViewFiles from '../screens/ViewFiles';
 import MainClass from '../screens/Expense Categorization/MainClass';
 import PaymentSubClass from '../screens/Expense Categorization/PaymentSubClass';
 import RemainderSubClass from '../screens/Expense Categorization/RemainderSubClass';
+import Extra from '../screens/extra';
+import IncomeCategorization from '../screens/IncomeCategorization';
 const Stack = createNativeStackNavigator();
 
 function MainNavigator() {
@@ -30,7 +32,9 @@ function MainNavigator() {
         <Stack.Screen name='MainClass' component={MainClass} options={{headerShown:false}}/>
         <Stack.Screen name='PaymentSC' component={PaymentSubClass} options={{headerShown:false}}/>
         <Stack.Screen name='RemainderSC' component={RemainderSubClass} options={{headerShown:false}}/>
-
+        <Stack.Screen name='extra' component={Extra} options={{headerShown:false}}/>
+        <Stack.Screen name='Income' component={IncomeCategorization} options={{headerShown:false}}/>
+       
         
 
       </Stack.Navigator>

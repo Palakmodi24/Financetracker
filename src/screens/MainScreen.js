@@ -14,31 +14,56 @@ const MainScreen = () => {
   const [dataDownloadUrl,setdataDownloadUrl]=useState("");
   const navigation = useNavigation();
   
-  const pickdoc = async()=>{
-    try{
+  const pickdoc = async () => {
+    try {
       const response = await DocumentPicker.pickSingle({
         type: [DocumentPicker.types.csv],
-        copyTo:"cachesDirectory"
-      
+        copyTo: "cachesDirectory"
       });
       console.log(response);
       setCsvData(response);
       if (response) {
         const storageRef = storage().ref(`/input/${user.email}/${response.name}`);
-        const put = await storageRef.putFile(response.fileCopyUri);
-  
-        setfullDataRefPath(put.metadata.fullPath);
-        const url = await storageRef.getDownloadURL();
-        setdataDownloadUrl(url);
-        Alert.alert("Data uploaded successfully");
+        const fileExists = await storageRef.getMetadata().then(() => true).catch(() => false);
+        if (fileExists) {
+          Alert.alert(
+            "File already exists",
+            "Do you want to replace it with the current file?",
+            [
+              {
+                text: "No",
+                onPress: () => console.log("No Pressed"),
+                style: "cancel"
+              },
+              {
+                text: "Yes",
+                onPress: async () => {
+                  const put = await storageRef.putFile(response.fileCopyUri);
+                  setfullDataRefPath(put.metadata.fullPath);
+                  const url = await storageRef.getDownloadURL();
+                  setdataDownloadUrl(url);
+                  Alert.alert("Data uploaded successfully");
+                }
+              }
+            ],
+            { cancelable: false }
+          );
+        } else {
+          const put = await storageRef.putFile(response.fileCopyUri);
+          setfullDataRefPath(put.metadata.fullPath);
+          const url = await storageRef.getDownloadURL();
+          setdataDownloadUrl(url);
+          Alert.alert("Data uploaded successfully");
+        }
       } else {
         // Handle the case where the user cancels the document picker
         Alert.alert("Document picking canceled");
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
   };
+  
   const logout=async()=>{
     try {
       await auth().signOut();
@@ -200,9 +225,9 @@ const MainScreen = () => {
             //opacity: csvData ? 1.0 : 0.5,
           }}
           //disabled={!csvData}
-          onPress={() => navigation.navigate('MainClass')}
+          onPress={() => navigation.navigate('extra')}
         >
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Expense Categorization</Text>
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Expense/Income Categorization</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

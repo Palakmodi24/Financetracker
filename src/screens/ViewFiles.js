@@ -1,11 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert,Image } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
+import back from '../images/back_button.png'
+import { useNavigation } from '@react-navigation/native';
 
 const ViewFiles = () => {
+  const navigation = useNavigation();
 
   const [fileList, setFileList] = useState([]); //to render the files
   const [selectedFiles, setSelectedFiles] = useState([]); //stores the files to be deleted
@@ -86,6 +89,7 @@ const ViewFiles = () => {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 20, backgroundColor: '#EFB7B7', paddingTop: 200 }}>
+    
       <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', marginBottom: 5 }}>Uploaded Files</Text>
       {fileList.length > 0 ? (
         <>
