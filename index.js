@@ -12,5 +12,7 @@ import MainScreen from './src/screens/MainScreen';
 import MainClass from './src/screens/Expense Categorization/MainClass';
 import extra from './src/screens/extra';
 import IncomeCategorization from './src/screens/IncomeCategorization';
+import victorybar from './src/screens/victorybar';
+
 
 AppRegistry.registerComponent(appName, () =>App);

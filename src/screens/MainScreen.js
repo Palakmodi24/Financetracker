@@ -6,6 +6,7 @@ import storage from '@react-native-firebase/storage';
 import AccountIcon from '../images/AccountIcon.png';
 import auth from '@react-native-firebase/auth';
 import { useNavigation } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore'; 
 
 const MainScreen = () => {
 
@@ -23,7 +24,7 @@ const MainScreen = () => {
       console.log(response);
       setCsvData(response);
       if (response) {
-        const storageRef = storage().ref(`/input/${user.email}/${response.name}`);
+        const storageRef = storage().ref(`/input/${auth().currentUser.email}/${response.name}`);
         const fileExists = await storageRef.getMetadata().then(() => true).catch(() => false);
         if (fileExists) {
           Alert.alert(
@@ -43,6 +44,16 @@ const MainScreen = () => {
                   const url = await storageRef.getDownloadURL();
                   setdataDownloadUrl(url);
                   Alert.alert("Data uploaded successfully");
+
+                  // Store file details in Firestore
+                  const uploadDate = new Date().toLocaleDateString();
+                  const uploadTime = new Date().toLocaleTimeString();
+                  await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+                    fileName: response.name,
+                    uploadedDate: uploadDate,
+                    uploadedTime: uploadTime,
+                    status: 'submitted'
+                  });
                 }
               }
             ],
@@ -54,6 +65,16 @@ const MainScreen = () => {
           const url = await storageRef.getDownloadURL();
           setdataDownloadUrl(url);
           Alert.alert("Data uploaded successfully");
+
+          // Store file details in Firestore
+          const uploadDate = new Date().toLocaleDateString();
+          const uploadTime = new Date().toLocaleTimeString();
+          await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+            fileName: response.name,
+            uploadedDate: uploadDate,
+            uploadedTime: uploadTime,
+            status: 'submitted'
+          });
         }
       } else {
         // Handle the case where the user cancels the document picker
