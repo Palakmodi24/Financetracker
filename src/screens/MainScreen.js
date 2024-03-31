@@ -49,6 +49,7 @@ const MainScreen = () => {
                   const uploadDate = new Date().toLocaleDateString();
                   const uploadTime = new Date().toLocaleTimeString();
                   await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+                    userName: auth().currentUser.email,
                     fileName: response.name,
                     uploadedDate: uploadDate,
                     uploadedTime: uploadTime,
@@ -70,6 +71,7 @@ const MainScreen = () => {
           const uploadDate = new Date().toLocaleDateString();
           const uploadTime = new Date().toLocaleTimeString();
           await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+            userName: auth().currentUser.email,
             fileName: response.name,
             uploadedDate: uploadDate,
             uploadedTime: uploadTime,
