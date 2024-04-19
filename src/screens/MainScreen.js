@@ -7,6 +7,7 @@ import AccountIcon from '../images/AccountIcon.png';
 import auth from '@react-native-firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore'; 
+import axios from 'axios';
 
 const MainScreen = () => {
 
@@ -18,74 +19,107 @@ const MainScreen = () => {
   const pickdoc = async () => {
     try {
       const response = await DocumentPicker.pickSingle({
-        type: [DocumentPicker.types.csv],
+        type: [DocumentPicker.types.allFiles],
         copyTo: "cachesDirectory"
       });
-      console.log(response);
-      setCsvData(response);
+  
       if (response) {
-        const storageRef = storage().ref(`/input/${auth().currentUser.email}/${response.name}`);
-        const fileExists = await storageRef.getMetadata().then(() => true).catch(() => false);
-        if (fileExists) {
-          Alert.alert(
-            "File already exists",
-            "Do you want to replace it with the current file?",
-            [
-              {
-                text: "No",
-                onPress: () => console.log("No Pressed"),
-                style: "cancel"
-              },
-              {
-                text: "Yes",
-                onPress: async () => {
-                  const put = await storageRef.putFile(response.fileCopyUri);
-                  setfullDataRefPath(put.metadata.fullPath);
-                  const url = await storageRef.getDownloadURL();
-                  setdataDownloadUrl(url);
-                  Alert.alert("Data uploaded successfully");
-
-                  // Store file details in Firestore
-                  const uploadDate = new Date().toLocaleDateString();
-                  const uploadTime = new Date().toLocaleTimeString();
-                  await firestore().collection('userQueue').doc(auth().currentUser.email).set({
-                    userName: auth().currentUser.email,
-                    fileName: response.name,
-                    uploadedDate: uploadDate,
-                    uploadedTime: uploadTime,
-                    status: 'submitted'
-                  });
+        const fileType = response.name.split('.').pop().toLowerCase();
+        if (fileType === 'csv' || fileType === 'xlsx') {
+          setCsvData(response);
+          const storageRef = storage().ref(`/input/${auth().currentUser.email}/${response.name}`);
+          const fileExists = await storageRef.getMetadata().then(() => true).catch(() => false);
+          if (fileExists) {
+            // Replace existing file
+            Alert.alert(
+              "File already exists",
+              "Do you want to replace it with the current file?",
+              [
+                {
+                  text: "No",
+                  onPress: () => console.log("No Pressed"),
+                  style: "cancel"
+                },
+                {
+                  text: "Yes",
+                  onPress: async () => {
+                    const put = await storageRef.putFile(response.fileCopyUri);
+                    setfullDataRefPath(put.metadata.fullPath);
+                    const url = await storageRef.getDownloadURL();
+                    setdataDownloadUrl(url);
+                    Alert.alert("Data uploaded successfully");
+  
+                    // Store file details in Firestore
+                    const uploadDate = new Date().toLocaleDateString();
+                    const uploadTime = new Date().toLocaleTimeString();
+                    await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+                      userName: auth().currentUser.email,
+                      fileName: response.name,
+                      uploadedDate: uploadDate,
+                      uploadedTime: uploadTime,
+                      status: 'submitted'
+                    });
+  
+                    // Fetch data after file upload
+                    fetchData();
+                  }
                 }
-              }
-            ],
-            { cancelable: false }
-          );
+              ],
+              { cancelable: false }
+            );
+          } else {
+            // Upload new file
+            const put = await storageRef.putFile(response.fileCopyUri);
+            setfullDataRefPath(put.metadata.fullPath);
+            const url = await storageRef.getDownloadURL();
+            setdataDownloadUrl(url);
+            Alert.alert("Data uploaded successfully");
+  
+            // Store file details in Firestore
+            const uploadDate = new Date().toLocaleDateString();
+            const uploadTime = new Date().toLocaleTimeString();
+            await firestore().collection('userQueue').doc(auth().currentUser.email).set({
+              userName: auth().currentUser.email,
+              fileName: response.name,
+              uploadedDate: uploadDate,
+              uploadedTime: uploadTime,
+              status: 'submitted'
+            });
+  
+            // Fetch data after file upload
+            fetchData();
+          }
         } else {
-          const put = await storageRef.putFile(response.fileCopyUri);
-          setfullDataRefPath(put.metadata.fullPath);
-          const url = await storageRef.getDownloadURL();
-          setdataDownloadUrl(url);
-          Alert.alert("Data uploaded successfully");
-
-          // Store file details in Firestore
-          const uploadDate = new Date().toLocaleDateString();
-          const uploadTime = new Date().toLocaleTimeString();
-          await firestore().collection('userQueue').doc(auth().currentUser.email).set({
-            userName: auth().currentUser.email,
-            fileName: response.name,
-            uploadedDate: uploadDate,
-            uploadedTime: uploadTime,
-            status: 'submitted'
-          });
+          Alert.alert("Invalid file type. Please select a CSV or XLSX file.");
         }
       } else {
-        // Handle the case where the user cancels the document picker
         Alert.alert("Document picking canceled");
       }
     } catch (err) {
       console.log(err);
     }
   };
+
+
+  const fetchData = async () => {
+    if (!auth().currentUser) {
+      console.log('User not authenticated');
+      return;
+    }
+    console.log('Sending email:', user.email);
+  
+    try {
+      const response = await axios.get(`https://05b4-34-91-134-185.ngrok-free.app/classify?username=${auth().currentUser.email}`);
+      console.log(response.data);
+      // Handle the fetched data here
+    } catch (error) {
+      console.error(error);
+      // Handle the error
+    }
+  };
+  
+  
+  
   
   const logout=async()=>{
     try {
@@ -105,11 +139,11 @@ const MainScreen = () => {
   
   if (user) {
     console.log('User is signed in:', user);
-    console.log(user);
+    
   } else {
     console.log('No user is signed in');
   }
-  //
+  
 
   const toggleAccountOptions = () => {
     setAccountOptionsVisible(!isAccountOptionsVisible);
@@ -263,6 +297,7 @@ const MainScreen = () => {
             alignItems: 'center',
             //opacity: csvData ? 1.0 : 0.5,
           }}
+          onPress={() => navigation.navigate('Python')}
           //disabled={!csvData}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>View Reports</Text>
