@@ -14,7 +14,9 @@ export default function Extra() {
   const [date, setDate] = useState('');
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [viewMode, setViewMode] = useState('yearly'); // 'yearly' or 'monthly'
+  const [viewMode, setViewMode] = useState('yearly'); // 'yearly', 'monthly', or 'custom'
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -81,16 +83,46 @@ export default function Extra() {
     }
   };
 
+  const handleCustomDateChange = () => {
+    if (startDate === '' || endDate === '') {
+      return;
+    }
+
+    const customData = data.filter(item => {
+      if (!item.date) return false; // Skip entries with empty date
+      const [day, month, year] = item.date.split('-');
+      const itemDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript Date
+      const startDateParts = startDate.split('/');
+      const endDateParts = endDate.split('/');
+      const startDateObj = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
+      const endDateObj = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
+
+      return itemDate >= startDateObj && itemDate <= endDateObj;
+    });
+
+    const income = Math.round(customData
+      .filter(item => item.category === 'income')
+      .reduce((total, item) => total + parseFloat(item.amount), 0));
+
+    const expense = Math.round(customData
+      .filter(item => item.category === 'expense')
+      .reduce((total, item) => total + parseFloat(item.amount), 0));
+
+    setTotalIncome(income);
+    setTotalExpense(expense);
+    setViewMode('custom'); // Update view mode to 'custom' for proper label display
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#EFB7B7', paddingTop: 20 }}>
-      <View style={{ paddingLeft: 10,paddingTop:20 }}>
+      <View style={{ paddingLeft: 10, paddingTop: 20 }}>
         <TouchableOpacity onPress={() => navigation.navigate('Main')}>
           <Image source={back} />
         </TouchableOpacity>
       </View>
       <View style={styles.container}>
         <StatusBar style="auto" />
-        <View style={{ flexDirection: 'row', marginBottom: 20,paddingLeft:60,paddingRight:60,paddingBottom:30 }}>
+        <View style={{ flexDirection: 'row', marginBottom: 20, paddingLeft: 60, paddingRight: 60, paddingBottom: 30 }}>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: viewMode === 'yearly' ? '#FA5007' : 'transparent', borderWidth: 1, borderColor: '#FA5007', borderTopLeftRadius: 5, borderBottomLeftRadius: 5 }]}
             onPress={() => toggleViewMode('yearly')}
@@ -98,28 +130,79 @@ export default function Extra() {
             <Text style={{ color: viewMode === 'yearly' ? 'white' : '#FA5007', padding: 5 }}>Yearly</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: viewMode === 'monthly' ? '#FA5007' : 'transparent', borderWidth: 1, borderColor: '#FA5007', borderTopRightRadius: 5, borderBottomRightRadius: 5 }]}
+            style={[styles.button, { backgroundColor: viewMode === 'monthly' ? '#FA5007' : 'transparent', borderWidth: 1, borderColor: '#FA5007' }]}
             onPress={() => toggleViewMode('monthly')}
           >
             <Text style={{ color: viewMode === 'monthly' ? 'white' : '#FA5007', padding: 5 }}>Monthly</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: viewMode === 'custom' ? '#FA5007' : 'transparent', borderWidth: 1, borderColor: '#FA5007', borderTopRightRadius: 5, borderBottomRightRadius: 5 }]}
+            onPress={() => toggleViewMode('custom')}
+          >
+            <Text style={{ color: viewMode === 'custom' ? 'white' : '#FA5007', padding: 5 }}>Custom</Text>
           </TouchableOpacity>
         </View>
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
           Income/Expense categorization
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-          <Text>Enter {viewMode === 'yearly' ? 'Year' : 'Date (MM/YYYY)'}: </Text>
-          <TextInput
-            style={{ borderWidth: 1, padding: 5, width: 100 }}
-            keyboardType="numeric"
-            value={date}
-            onChangeText={text => viewMode === 'yearly' ? handleYearChange(text) : handleDateChange(text)}
-          />
-        </View>
+        {(viewMode === 'yearly' || viewMode === 'monthly') && (
+          <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+            {viewMode === 'yearly' && (
+              <View>
+              <Text style={{paddingBottom:10}}>Enter Year</Text>
+              <TextInput
+                style={{ borderWidth: 1, padding: 5, width: 180 }}
+                keyboardType="numeric"
+                placeholder="Enter Year"
+                value={date}
+                onChangeText={text => handleYearChange(text)}
+              />
+            </View>
+            )}
+            {viewMode === 'monthly' && (
+              <View>
+              <Text style={{paddingBottom:10}}>Enter Month/Year</Text>
+              <TextInput
+                style={{ borderWidth: 1, padding: 5, width: 180 }}
+                keyboardType="numeric"
+                placeholder="MM/YYYY"
+                value={date}
+                onChangeText={text => handleDateChange(text)}
+              />
+              </View>
+            )}
+          </View>
+        )}
+        {viewMode === 'custom' && (
+          <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+            <Text style={{paddingBottom:10}}>Enter Start Date (DD/MM/YYYY): </Text>
+            <TextInput
+              style={{ borderWidth: 1, padding: 5, width: 180 }}
+              keyboardType="numeric"
+              placeholder="DD/MM/YYYY"
+              value={startDate}
+              onChangeText={text => setStartDate(text)}
+            />
+            <Text style={{paddingBottom:10, paddingTop:10}}>Enter End Date (DD/MM/YYYY): </Text>
+            <TextInput
+              style={{ borderWidth: 1, padding: 5, width: 180 }}
+              keyboardType="numeric"
+              placeholder="DD/MM/YYYY"
+              value={endDate}
+              onChangeText={text => setEndDate(text)}
+            />
+            <TouchableOpacity
+              style={{ marginTop: 10, padding: 5, backgroundColor: '#FA5007', borderRadius: 5 }}
+              onPress={handleCustomDateChange}
+            >
+              <Text style={{ color: 'white' }}>Show</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         
         {totalIncome === 0 && totalExpense === 0 ? (
           <Text style={{ fontSize: 16, color: '#000000', paddingBottom: 20 }}>
-            No data available for {viewMode === 'yearly' ? date : `month ${date.split('/')[0]}, year ${date.split('/')[1]}`}. Enter correct value.
+            No data available for selected period. Enter correct value.
           </Text>
         ) : (
           <VictoryPie
