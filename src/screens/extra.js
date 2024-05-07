@@ -117,7 +117,11 @@ export default function Extra() {
           />
         </View>
         
-        {(viewMode === 'yearly' || date) && (
+        {totalIncome === 0 && totalExpense === 0 ? (
+          <Text style={{ fontSize: 16, color: '#000000', paddingBottom: 20 }}>
+            No data available for {viewMode === 'yearly' ? date : `month ${date.split('/')[0]}, year ${date.split('/')[1]}`}. Enter correct value.
+          </Text>
+        ) : (
           <VictoryPie
             data={[
               { x: 'Income', y: totalIncome },
