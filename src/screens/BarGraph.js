@@ -5,23 +5,37 @@ import * as d3 from 'd3-time-format';
 
 const BarGraph = ({ data }) => {
   const formatMonth = d3.timeFormat('%B'); // Format for full month name
-  
+  const months = Array.from({ length: 12 }, (_, i) => formatMonth(new Date(2024, i)));
+
+  // Prepare data for all 12 months, filling in 0 for missing months
+  const formattedData = months.map((month, index) => {
+    const dataPoint = data.find((d) => new Date(d.date).getMonth() === index);
+    return { month, amount: dataPoint ? dataPoint.amount : 0 };
+  });
+
+  // Calculate tick values for y-axis
+  const tickValues = Array.from({ length: 11 }, (_, i) => (i + 1) * 1000);
 
   return (
     <View style={styles.container}>
-      <VictoryChart width={400} theme={VictoryTheme.material}>
+      <VictoryChart
+        width={400}
+        theme={VictoryTheme.material}
+        domainPadding={{ x: 20 }}
+      >
         <VictoryAxis
-          tickFormat={(x) => formatMonth(new Date(x))}
+          tickValues={months}
           style={{
             tickLabels: { angle: -45, fontSize: 8 },
+            grid: { stroke: '#ccc', strokeWidth: 0.5 }
           }}
         />
-        <VictoryAxis dependentAxis />
+        <VictoryAxis dependentAxis tickValues={tickValues} />
         <VictoryBar
-          data={data.filter((d) => !isNaN(d.amount))}
-          x="date"
+          data={formattedData}
+          x="month"
           y="amount"
-          style={{ data: { fill: '#c43a31' } }}
+          style={{ data: { fill: '#FA5007' } }}
         />
       </VictoryChart>
     </View>
@@ -33,7 +47,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 55,
   },
 });
 
 export default BarGraph;
+
+

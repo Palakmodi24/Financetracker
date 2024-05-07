@@ -24,6 +24,12 @@ const MainScreen = () => {
       });
   
       if (response) {
+        
+          const fileSize = response.size / (1024 * 1024); // Convert to MB
+          if (fileSize > 10) {
+            Alert.alert("Can not upload file more than 10 MB");
+            return; // Stop further processing
+          }
         const fileType = response.name.split('.').pop().toLowerCase();
         if (fileType === 'csv' || fileType === 'xlsx') {
           setCsvData(response);
@@ -109,7 +115,7 @@ const MainScreen = () => {
     console.log('Sending email:', user.email);
   
     try {
-      const response = await axios.get(`https://05b4-34-91-134-185.ngrok-free.app/classify?username=${auth().currentUser.email}`);
+      const response = await axios.get(`https://010b-35-222-33-50.ngrok-free.app/classify?username=${auth().currentUser.email}`);
       console.log(response.data);
       // Handle the fetched data here
     } catch (error) {

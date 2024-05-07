@@ -14,6 +14,7 @@ import extra from './src/screens/extra';
 import IncomeCategorization from './src/screens/IncomeCategorization';
 import victorybar from './src/screens/victorybar';
 import PythonCode from './src/screens/PythonCode';
+import PieEXxpenseCategorization from './src/screens/PieEXxpenseCategorization';
 
 
 AppRegistry.registerComponent(appName, () =>App);

@@ -16,6 +16,7 @@ import RemainderSubClass from '../screens/Expense Categorization/RemainderSubCla
 import Extra from '../screens/extra';
 import IncomeCategorization from '../screens/IncomeCategorization';
 import PythonCode from '../screens/PythonCode';
+import PieEXxpenseCategorization from '../screens/PieEXxpenseCategorization';
 const Stack = createNativeStackNavigator();
 
 function MainNavigator() {
@@ -36,6 +37,7 @@ function MainNavigator() {
         <Stack.Screen name='extra' component={Extra} options={{headerShown:false}}/>
         <Stack.Screen name='Income' component={IncomeCategorization} options={{headerShown:false}}/>
         <Stack.Screen name='Python' component={PythonCode} options={{headerShown:false}}/>
+        <Stack.Screen name='Pie' component={PieEXxpenseCategorization} options={{headerShown:false}}/>
        
         
 

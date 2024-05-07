@@ -11,10 +11,9 @@ import storage from '@react-native-firebase/storage';
 export default function Extra() {
   const navigation = useNavigation();
   const [data, setData] = useState([]);
-  const [year, setYear] = useState('2024');
+  const [year, setYear] = useState('');
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -46,26 +45,16 @@ export default function Extra() {
   };
 
   const calculateTotalAmounts = (selectedYear) => {
-    const filteredData = data.filter(item => item.date && item.date.includes(selectedYear));
-  
-    if (filteredData.length === 0) {
-      setErrorMessage(`No data available for ${selectedYear}. Please enter correct year value.`);
-      setTotalIncome(0);
-      setTotalExpense(0);
-      return;
-    }
-  
-    const income = Math.round(filteredData
-      .filter(item => item.category === 'income')
+    const income = Math.round(data
+      .filter(item => item.category === 'income' && item.date.includes(selectedYear))
       .reduce((total, item) => total + parseFloat(item.amount), 0));
   
-    const expense = Math.round(filteredData
-      .filter(item => item.category === 'expense')
+    const expense = Math.round(data
+      .filter(item => item.category === 'expense' && item.date.includes(selectedYear))
       .reduce((total, item) => total + parseFloat(item.amount), 0));
   
     setTotalIncome(income);
     setTotalExpense(expense);
-    setErrorMessage('');
   };
   
 
@@ -90,9 +79,7 @@ export default function Extra() {
             onChangeText={text => handleYearChange(text)}
           />
         </View>
-        {errorMessage ? (
-          <Text>{errorMessage}</Text>
-        ) : (
+        {year && (
           <VictoryPie
             data={[
               { x: 'Income', y: totalIncome },
