@@ -142,6 +142,7 @@ export default function Extra() {
             <Text style={{ color: viewMode === 'custom' ? 'white' : '#FA5007', padding: 5 }}>Custom</Text>
           </TouchableOpacity>
         </View>
+        
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
           Income/Expense categorization
         </Text>
@@ -172,6 +173,14 @@ export default function Extra() {
               </View>
             )}
           </View>
+        )}
+        {(viewMode === 'yearly' || viewMode === 'monthly') && (
+          <TouchableOpacity
+            style={{ marginTop: 10, padding: 5, backgroundColor: '#FA5007', borderRadius: 5 }}
+            onPress={() => toggleViewMode(viewMode)} // Use toggleViewMode function to show the graph
+          >
+            <Text style={{ color: 'white' }}>Show</Text>
+          </TouchableOpacity>
         )}
         {viewMode === 'custom' && (
           <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
