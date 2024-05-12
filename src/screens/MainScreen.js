@@ -115,7 +115,7 @@ const MainScreen = () => {
     console.log('Sending email:', user.email);
   
     try {
-      const response = await axios.get(`https://010b-35-222-33-50.ngrok-free.app/classify?username=${auth().currentUser.email}`);
+      const response = await axios.get(`https://98ec-34-72-143-44.ngrok-free.app/classify?username=${auth().currentUser.email}`);
       console.log(response.data);
       // Handle the fetched data here
     } catch (error) {

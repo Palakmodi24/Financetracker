@@ -54,22 +54,22 @@ export default function Extra() {
   };
 
   const calculateTotalAmounts = (selectedMonth, selectedYear) => {
-    const income = Math.round(data
+    const filteredData = data.filter(item => item.amount && item.category && item.date);
+
+    const income = Math.round(filteredData
       .filter(item => {
-        if (!item.date) return false; // Skip entries with empty date
-        const [day, month, year] = item.date.split('-');
+        const [day, month, year] = item.date.split('/');
         return item.category === 'income' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
       })
       .reduce((total, item) => total + parseFloat(item.amount), 0));
-  
-    const expense = Math.round(data
+
+    const expense = Math.round(filteredData
       .filter(item => {
-        if (!item.date) return false; // Skip entries with empty date
-        const [day, month, year] = item.date.split('-');
+        const [day, month, year] = item.date.split('/');
         return item.category === 'expense' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
       })
       .reduce((total, item) => total + parseFloat(item.amount), 0));
-  
+
     setTotalIncome(income);
     setTotalExpense(expense);
   };
@@ -87,31 +87,32 @@ export default function Extra() {
     if (startDate === '' || endDate === '') {
       return;
     }
-
+  
     const customData = data.filter(item => {
       if (!item.date) return false; // Skip entries with empty date
-      const [day, month, year] = item.date.split('-');
+      const [day, month, year] = item.date.split('/');
       const itemDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript Date
       const startDateParts = startDate.split('/');
       const endDateParts = endDate.split('/');
       const startDateObj = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
       const endDateObj = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
-
+  
       return itemDate >= startDateObj && itemDate <= endDateObj;
     });
-
+  
     const income = Math.round(customData
       .filter(item => item.category === 'income')
       .reduce((total, item) => total + parseFloat(item.amount), 0));
-
+  
     const expense = Math.round(customData
       .filter(item => item.category === 'expense')
       .reduce((total, item) => total + parseFloat(item.amount), 0));
-
+  
     setTotalIncome(income);
     setTotalExpense(expense);
     setViewMode('custom'); // Update view mode to 'custom' for proper label display
   };
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: '#EFB7B7', paddingTop: 20 }}>
@@ -211,7 +212,7 @@ export default function Extra() {
         
         {totalIncome === 0 && totalExpense === 0 ? (
           <Text style={{ fontSize: 16, color: '#000000', paddingBottom: 20 }}>
-            No data available for selected period. Enter correct value.
+            No data available for selected period or invalid data format. Enter correct value.
           </Text>
         ) : (
           <VictoryPie
