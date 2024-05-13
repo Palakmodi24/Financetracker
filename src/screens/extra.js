@@ -123,10 +123,13 @@ export default function Extra() {
   };
 
   const getYearOptions = () => {
-    return data.map(item => item.date && item.date.split('/')[2]) // Get year part from date
+    const uniqueYears = data.map(item => item.date && item.date.split('/')[2]) // Get year part from date
       .filter((value, index, self) => self.indexOf(value) === index && value) // Remove duplicates and empty values
-      .map(year => <Picker.Item key={year} label={year} value={year} />);
+      .sort((a, b) => parseInt(a, 10) - parseInt(b, 10)); // Sort in ascending order
+  
+    return uniqueYears.map(year => <Picker.Item key={year} label={year} value={year} />);
   };
+  
 
   const getMonthOptions = () => {
     const monthsWithData = data
