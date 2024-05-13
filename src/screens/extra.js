@@ -7,16 +7,18 @@ import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import Papa from 'papaparse';
 import storage from '@react-native-firebase/storage';
+import { Picker } from '@react-native-picker/picker';
 
 export default function Extra() {
   const navigation = useNavigation();
   const [data, setData] = useState([]);
-  const [date, setDate] = useState('');
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [viewMode, setViewMode] = useState('yearly'); // 'yearly', 'monthly', or 'custom'
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -42,77 +44,95 @@ export default function Extra() {
     }
   };
 
-  const handleYearChange = (inputYear) => {
-    setDate(inputYear);
-    calculateTotalAmounts('', inputYear);
-  };
-
-  const handleDateChange = (inputDate) => {
-    setDate(inputDate);
-    const [selectedMonth, selectedYear] = inputDate.split('/'); // Split date into month and year
-    calculateTotalAmounts(selectedMonth, selectedYear);
-  };
-
-  const calculateTotalAmounts = (selectedMonth, selectedYear) => {
+  const calculateTotalAmounts = () => {
     const filteredData = data.filter(item => item.amount && item.category && item.date);
-
-    const income = Math.round(filteredData
-      .filter(item => {
-        const [day, month, year] = item.date.split('/');
-        return item.category === 'income' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
-      })
-      .reduce((total, item) => total + parseFloat(item.amount), 0));
-
-    const expense = Math.round(filteredData
-      .filter(item => {
-        const [day, month, year] = item.date.split('/');
-        return item.category === 'expense' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
-      })
-      .reduce((total, item) => total + parseFloat(item.amount), 0));
-
+  
+    let income = 0;
+    let expense = 0;
+  
+    if (viewMode === 'yearly') {
+      income = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          return item.category === 'income' && (selectedYear === '' || year === selectedYear);
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+  
+      expense = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          return item.category === 'expense' && (selectedYear === '' || year === selectedYear);
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+    } else if (viewMode === 'monthly') {
+      income = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          return item.category === 'income' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+  
+      expense = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          return item.category === 'expense' && (selectedMonth === '' || month === selectedMonth) && (selectedYear === '' || year === selectedYear);
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+    } else if (viewMode === 'custom') {
+      const startDateParts = customStartDate.split('/');
+      const startDate = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
+      const endDateParts = customEndDate.split('/');
+      const endDate = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
+  
+      income = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          const currentDate = new Date(year, month - 1, day);
+          return item.category === 'income' && currentDate >= startDate && currentDate <= endDate;
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+  
+      expense = Math.round(filteredData
+        .filter(item => {
+          const [day, month, year] = item.date.split('/');
+          const currentDate = new Date(year, month - 1, day);
+          return item.category === 'expense' && currentDate >= startDate && currentDate <= endDate;
+        })
+        .reduce((total, item) => total + parseFloat(item.amount), 0));
+    }
+  
     setTotalIncome(income);
     setTotalExpense(expense);
   };
+  
   
   const toggleViewMode = (mode) => {
     setViewMode(mode);
     if (mode === 'yearly') {
-      calculateTotalAmounts('', date);
+      setSelectedYear('');
+      calculateTotalAmounts();
     } else if (mode === 'monthly') {
-      handleDateChange(date);
+      setSelectedMonth('');
+      setSelectedYear('');
+      calculateTotalAmounts();
+    } else if (mode === 'custom') {
+      setCustomStartDate('');
+      setCustomEndDate('');
+      calculateTotalAmounts();
     }
   };
 
-  const handleCustomDateChange = () => {
-    if (startDate === '' || endDate === '') {
-      return;
-    }
-  
-    const customData = data.filter(item => {
-      if (!item.date) return false; // Skip entries with empty date
-      const [day, month, year] = item.date.split('/');
-      const itemDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript Date
-      const startDateParts = startDate.split('/');
-      const endDateParts = endDate.split('/');
-      const startDateObj = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
-      const endDateObj = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
-  
-      return itemDate >= startDateObj && itemDate <= endDateObj;
-    });
-  
-    const income = Math.round(customData
-      .filter(item => item.category === 'income')
-      .reduce((total, item) => total + parseFloat(item.amount), 0));
-  
-    const expense = Math.round(customData
-      .filter(item => item.category === 'expense')
-      .reduce((total, item) => total + parseFloat(item.amount), 0));
-  
-    setTotalIncome(income);
-    setTotalExpense(expense);
-    setViewMode('custom'); // Update view mode to 'custom' for proper label display
+  const getYearOptions = () => {
+    return data.map(item => item.date && item.date.split('/')[2]) // Get year part from date
+      .filter((value, index, self) => self.indexOf(value) === index && value) // Remove duplicates and empty values
+      .map(year => <Picker.Item key={year} label={year} value={year} />);
   };
-  
+
+  const getMonthOptions = () => {
+    return data.map(item => item.date && item.date.split('/')[1]) // Get month part from date
+      .filter((value, index, self) => self.indexOf(value) === index && value) // Remove duplicates and empty values
+      .map(month => <Picker.Item key={month} label={month} value={month} />);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#EFB7B7', paddingTop: 20 }}>
@@ -147,68 +167,62 @@ export default function Extra() {
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000000', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
           Income/Expense categorization
         </Text>
-        {(viewMode === 'yearly' || viewMode === 'monthly') && (
+        {viewMode === 'yearly' && (
           <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
-            {viewMode === 'yearly' && (
-              <View>
-              <Text style={{paddingBottom:10}}>Enter Year</Text>
-              <TextInput
-                style={{ borderWidth: 1, padding: 5, width: 180 }}
-                keyboardType="numeric"
-                placeholder="Enter Year"
-                value={date}
-                onChangeText={text => handleYearChange(text)}
-              />
-            </View>
-            )}
-            {viewMode === 'monthly' && (
-              <View>
-              <Text style={{paddingBottom:10}}>Enter Month/Year</Text>
-              <TextInput
-                style={{ borderWidth: 1, padding: 5, width: 180 }}
-                keyboardType="numeric"
-                placeholder="MM/YYYY"
-                value={date}
-                onChangeText={text => handleDateChange(text)}
-              />
-              </View>
-            )}
+            <Text style={{paddingBottom:10}}>Select Year</Text>
+            <Picker
+              selectedValue={selectedYear}
+              style={{ height: 50, width: 180 }}
+              onValueChange={(itemValue, itemIndex) => setSelectedYear(itemValue)}
+            >
+              {getYearOptions()}
+            </Picker>
           </View>
         )}
-        {(viewMode === 'yearly' || viewMode === 'monthly') && (
-          <TouchableOpacity
-            style={{ marginTop: 10, padding: 5, backgroundColor: '#FA5007', borderRadius: 5 }}
-            onPress={() => toggleViewMode(viewMode)} // Use toggleViewMode function to show the graph
-          >
-            <Text style={{ color: 'white' }}>Show</Text>
-          </TouchableOpacity>
+        {viewMode === 'monthly' && (
+          <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+            <Text style={{paddingBottom:10}}>Select Month</Text>
+            <Picker
+              selectedValue={selectedMonth}
+              style={{ height: 50, width: 180 }}
+              onValueChange={(itemValue, itemIndex) => setSelectedMonth(itemValue)}
+            >
+              {getMonthOptions()}
+            </Picker>
+            <Text style={{paddingBottom:10}}>Select Year</Text>
+            <Picker
+              selectedValue={selectedYear}
+              style={{ height: 50, width: 180 }}
+              onValueChange={(itemValue, itemIndex) => setSelectedYear(itemValue)}
+            >
+              {getYearOptions()}
+            </Picker>
+          </View>
         )}
         {viewMode === 'custom' && (
           <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
-            <Text style={{paddingBottom:10}}>Enter Start Date (DD/MM/YYYY): </Text>
+            <Text style={{paddingBottom:10}}>Start Date</Text>
             <TextInput
-              style={{ borderWidth: 1, padding: 5, width: 180 }}
-              keyboardType="numeric"
+              style={{ height: 40, width: 180, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 5 }}
               placeholder="DD/MM/YYYY"
-              value={startDate}
-              onChangeText={text => setStartDate(text)}
+              onChangeText={text => setCustomStartDate(text)}
+              value={customStartDate}
             />
-            <Text style={{paddingBottom:10, paddingTop:10}}>Enter End Date (DD/MM/YYYY): </Text>
+            <Text style={{paddingBottom:10}}>End Date</Text>
             <TextInput
-              style={{ borderWidth: 1, padding: 5, width: 180 }}
-              keyboardType="numeric"
+              style={{ height: 40, width: 180, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 5 }}
               placeholder="DD/MM/YYYY"
-              value={endDate}
-              onChangeText={text => setEndDate(text)}
+              onChangeText={text => setCustomEndDate(text)}
+              value={customEndDate}
             />
-            <TouchableOpacity
-              style={{ marginTop: 10, padding: 5, backgroundColor: '#FA5007', borderRadius: 5 }}
-              onPress={handleCustomDateChange}
-            >
-              <Text style={{ color: 'white' }}>Show</Text>
-            </TouchableOpacity>
           </View>
         )}
+        <TouchableOpacity
+          style={{ marginTop: 10, padding: 5, backgroundColor: '#FA5007', borderRadius: 5 }}
+          onPress={calculateTotalAmounts}
+        >
+          <Text style={{ color: 'white' }}>Show</Text>
+        </TouchableOpacity>
         
         {totalIncome === 0 && totalExpense === 0 ? (
           <Text style={{ fontSize: 16, color: '#000000', paddingBottom: 20 }}>
@@ -224,7 +238,7 @@ export default function Extra() {
             innerRadius={75}
             labelRadius={100}
             labels={({ datum }) => `${datum.x}: ${datum.y}`}
-            style={{ labels: { fill: 'white', fontSize: 12, fontWeight: 'bold' } }}
+            style={{ labels: { fill: 'white', fontSize: 16, fontWeight: 'bold' } }}
           />
         )}
       </View>
