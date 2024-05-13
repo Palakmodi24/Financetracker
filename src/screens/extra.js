@@ -172,8 +172,10 @@ export default function Extra() {
             <Text style={{paddingBottom:10}}>Select Year</Text>
             <Picker
               selectedValue={selectedYear}
-              style={{ height: 50, width: 180 }}
+              style={{ height: 50, width: 120, backgroundColor: '#FA5007',color: '#ffffff' }}
               onValueChange={(itemValue, itemIndex) => setSelectedYear(itemValue)}
+              dropdownIconColor="white"
+              prompt="Select Year"
             >
               {getYearOptions()}
             </Picker>
@@ -184,16 +186,20 @@ export default function Extra() {
             <Text style={{paddingBottom:10}}>Select Month</Text>
             <Picker
               selectedValue={selectedMonth}
-              style={{ height: 50, width: 180 }}
+              style={{ height: 50, width: 120, backgroundColor: '#FA5007',color: '#ffffff' }}
               onValueChange={(itemValue, itemIndex) => setSelectedMonth(itemValue)}
+              dropdownIconColor="white"
+              prompt="Select Month"
             >
               {getMonthOptions()}
             </Picker>
             <Text style={{paddingBottom:10}}>Select Year</Text>
             <Picker
               selectedValue={selectedYear}
-              style={{ height: 50, width: 180 }}
+              style={{ height: 50, width: 120, backgroundColor: '#FA5007',color: '#ffffff' }}
               onValueChange={(itemValue, itemIndex) => setSelectedYear(itemValue)}
+              dropdownIconColor="white"
+              prompt="Select Year"
             >
               {getYearOptions()}
             </Picker>
