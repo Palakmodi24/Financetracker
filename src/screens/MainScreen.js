@@ -115,7 +115,7 @@ const MainScreen = () => {
     console.log('Sending email:', user.email);
   
     try {
-      const response = await axios.get(`https://b119-35-196-129-166.ngrok-free.app/classify?username=${auth().currentUser.email}`);
+      const response = await axios.get(`https://a420-34-16-150-5.ngrok-free.app/classify?username=${auth().currentUser.email}`);
       console.log(response.data);
       // Handle the fetched data here
     } catch (error) {
@@ -290,24 +290,10 @@ const MainScreen = () => {
           //disabled={!csvData}
           onPress={() => navigation.navigate('extra')}
         >
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Expense/Income Categorization</Text>
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>Reports</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={{
-            height: 60,
-            borderRadius: 20,
-            backgroundColor: '#FA5007',
-            marginBottom: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-            //opacity: csvData ? 1.0 : 0.5,
-          }}
-          onPress={() => navigation.navigate('Python')}
-          //disabled={!csvData}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>View Reports</Text>
-        </TouchableOpacity>
+        
       </View>
 
       <Text style={{ marginTop: 30, color: '#000000', fontSize: 18 }}>Select and upload your financial-related data and view the analytics</Text>

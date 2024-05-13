@@ -129,10 +129,27 @@ export default function Extra() {
   };
 
   const getMonthOptions = () => {
-    return data.map(item => item.date && item.date.split('/')[1]) // Get month part from date
-      .filter((value, index, self) => self.indexOf(value) === index && value) // Remove duplicates and empty values
-      .map(month => <Picker.Item key={month} label={month} value={month} />);
+    const monthsWithData = data
+      .filter(item => item.date && item.date.split('/')[2] === selectedYear) // Filter data for the selected year
+      .map(item => item.date && item.date.split('/')[1]); // Get month part from date
+  
+    const uniqueMonths = [...new Set(monthsWithData)]; // Remove duplicates
+    const sortedMonths = uniqueMonths.sort((a, b) => parseInt(a, 10) - parseInt(b, 10)); // Sort in ascending order
+  
+    return sortedMonths
+      .filter(month => { // Include only those months whose category is income or expense
+        const monthData = data.filter(item => item.date && item.date.split('/')[1] === month && item.date.split('/')[2] === selectedYear);
+        return monthData.some(item => item.category === 'income' || item.category === 'expense');
+      })
+      .map(month => {
+        // Convert month number to month name
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return <Picker.Item key={month} label={monthNames[parseInt(month, 10) - 1]} value={month} />;
+      });
   };
+  
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: '#EFB7B7', paddingTop: 20 }}>
@@ -183,16 +200,6 @@ export default function Extra() {
         )}
         {viewMode === 'monthly' && (
           <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
-            <Text style={{paddingBottom:10}}>Select Month</Text>
-            <Picker
-              selectedValue={selectedMonth}
-              style={{ height: 50, width: 120, backgroundColor: '#FA5007',color: '#ffffff' }}
-              onValueChange={(itemValue, itemIndex) => setSelectedMonth(itemValue)}
-              dropdownIconColor="white"
-              prompt="Select Month"
-            >
-              {getMonthOptions()}
-            </Picker>
             <Text style={{paddingBottom:10}}>Select Year</Text>
             <Picker
               selectedValue={selectedYear}
@@ -202,6 +209,16 @@ export default function Extra() {
               prompt="Select Year"
             >
               {getYearOptions()}
+            </Picker>
+            <Text style={{paddingBottom:10}}>Select Month</Text>
+            <Picker
+              selectedValue={selectedMonth}
+              style={{ height: 50, width: 120, backgroundColor: '#FA5007',color: '#ffffff' }}
+              onValueChange={(itemValue, itemIndex) => setSelectedMonth(itemValue)}
+              dropdownIconColor="white"
+              prompt="Select Month"
+            >
+              {getMonthOptions()}
             </Picker>
           </View>
         )}
